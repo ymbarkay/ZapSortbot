@@ -1,0 +1,82 @@
+#include <WiFi.h>
+#include "HX711.h"
+
+// === Wi-Fi Credentials ===
+const char* ssid = "Wifiname";
+const char* password = "Password";
+
+// === HX711 Pins ===
+#define DOUT 4
+#define SCK 5
+
+HX711 scale;
+float calibration_factor = 10000;  // Use your accurate calibration factor
+
+WiFiServer server(80);
+
+void setup() {
+  Serial.begin(115200);
+  delay(500);
+  Serial.println("🔌 Initializing HX711...");
+
+  // === Connect to Wi-Fi ===
+  WiFi.begin(ssid, password);
+  Serial.print("🌐 Connecting to Wi-Fi");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("\n✅ Connected to Wi-Fi");
+  Serial.print("📡 IP Address: ");
+  Serial.println(WiFi.localIP());
+
+  server.begin();
+
+  // === Initialize Scale ===
+  scale.begin(DOUT, SCK);
+
+  if (!scale.is_ready()) {
+    Serial.println("❌ HX711 not found. Check wiring.");
+    while (1);
+  }
+
+  Serial.println("✅ HX711 is ready.");
+  Serial.println("Taring...");
+  scale.set_scale();
+  scale.tare();  // Reset to 0
+  Serial.println("✅ Scale tared.");
+  scale.set_scale(calibration_factor);  // Apply accurate calibration
+}
+
+void loop() {
+  WiFiClient client = server.available();
+  if (client) {
+    Serial.println("📥 Client connected");
+
+    while (client.connected()) {
+      if (client.available()) {
+        String req = client.readStringUntil('\r');
+        client.read(); // consume '\n'
+
+        float weight = scale.get_units(1);  // Single averaged reading
+        Serial.print("⚖️ Weight: ");
+        Serial.print(weight, 2);
+        Serial.println(" g");
+
+        // Send weight as plain text response
+        client.println("HTTP/1.1 200 OK");
+        client.println("Content-Type: text/plain");
+        client.println("Connection: close");
+        client.println();
+        client.println(weight, 2);  // Send 2 decimal places
+        break;
+      }
+    }
+
+    client.stop();
+    Serial.println("❌ Client disconnected");
+  }
+
+  delay(50);  // Loop quickly for responsive access
+}
+
