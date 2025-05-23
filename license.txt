@@ -1,0 +1,16 @@
+Custom License for Zapbot
+
+Copyright (c) 2025 Youssouf Barkay Molimi
+
+This software is licensed under the Creative Commons Attribution-NonCommercial 4.0 International License (CC BY-NC 4.0), with the following additional terms:
+Additional Terms:
+
+Commercial Use Restriction:
+Only the original author, Youssouf Barkay Molimi, is permitted to use this software for commercial purposes. Any commercial use by third parties is strictly prohibited unless a separate commercial license is obtained directly from the author.
+
+You may use, modify, and distribute this software for non-commercial purposes under the terms of the CC BY-NC 4.0 license.
+
+For commercial licensing inquiries, contact: ymbarkay@gmail.com
+
+License summary: https://creativecommons.org/licenses/by-nc/4.0/
+Full license text: https://creativecommons.org/licenses/by-nc/4.0/legalcode
