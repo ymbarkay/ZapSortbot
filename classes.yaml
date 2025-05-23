@@ -1,0 +1,7 @@
+names:
+- battery
+- NiMh
+- Lithium
+path: C:/Users/Youssouf/Batteryapp
+train: images/train
+val: images/val
