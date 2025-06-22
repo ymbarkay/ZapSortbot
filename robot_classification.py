@@ -25,7 +25,7 @@ LITHIUM_DROP = PoseObject(0.189, 0.024, 0.120, -0.715, 1.303, -0.750)
 UNKNOWN_DROP = PoseObject(0.443, -0.135, 0.166, -0.180, 1.354, -0.315)
 
 def main(page: ft.Page):
-    page.title = "DropBot | Robot Classification"
+    page.title = "Zapsortbot | Robot Classification"
     page.scroll = ft.ScrollMode.AUTO
     page.theme_mode = ft.ThemeMode.DARK
     page.bgcolor = Colors.BLACK
