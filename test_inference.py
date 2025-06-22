@@ -51,7 +51,7 @@ def infer_rotated_size_from_crop(crop):
         return "unknown", length
 
 def main(page: ft.Page):
-    page.title = "DropBot | Test Inference"
+    page.title = "Zapsortbot | Test Inference"
     page.scroll = ft.ScrollMode.AUTO
     page.theme_mode = ft.ThemeMode.DARK
     page.bgcolor = ft.colors.BLACK  # Fixed case
