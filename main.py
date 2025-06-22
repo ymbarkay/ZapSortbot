@@ -3,7 +3,7 @@ import subprocess
 import os
 
 def main(page: ft.Page):
-    page.title = "DropBot | Control Panel"
+    page.title = "Zapsortbot | Control Panel"
     page.theme_mode = ft.ThemeMode.DARK
     page.bgcolor = ft.colors.BLACK
     page.scroll = ft.ScrollMode.AUTO
@@ -27,7 +27,7 @@ def main(page: ft.Page):
     title = ft.Row([
         ft.Icon(name=ft.icons.BOLT, color=ft.colors.PINK_300, size=20),
         ft.Text(
-            "DropBot Control Panel",
+            "Zapsortbot Control Panel",
             size=18,
             weight=ft.FontWeight.BOLD,
             color=ft.colors.GREY_200,
@@ -69,7 +69,7 @@ def main(page: ft.Page):
 
     # === Footer ===
     page.add(ft.Divider())
-    page.add(ft.Text("Welcome to DropBot!", size=12, text_align=ft.TextAlign.CENTER))
+    page.add(ft.Text("Welcome to Zapsortbot!", size=12, text_align=ft.TextAlign.CENTER))
     page.add(
         ft.ElevatedButton("Exit", icon=ft.icons.CLOSE, bgcolor=ft.colors.PURPLE_700,
                           on_click=lambda e: page.window_close())
