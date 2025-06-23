@@ -134,7 +134,7 @@ def main(page: ft.Page):
     # === Layout ===
     page.add(
         ft.Column([
-            ft.Row([ft.Text("🤖 DropBot Pose Editor", size=22, weight=ft.FontWeight.BOLD)]),
+            ft.Row([ft.Text("🤖 ZapSortBot Pose Editor", size=22, weight=ft.FontWeight.BOLD)]),
             dropdown,
             ft.ElevatedButton("📍 Save Current Position", on_click=update_pose, bgcolor=ft.colors.BLUE_600),
             position_text,
