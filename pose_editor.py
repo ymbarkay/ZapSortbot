@@ -35,7 +35,7 @@ def encode_frame(frame):
     return base64.b64encode(buffer).decode()
 
 def main(page: ft.Page):
-    page.title = "DropBot | Pose Editor"
+    page.title = "ZapSortBot | Pose Editor"
     page.theme_mode = ft.ThemeMode.DARK
     page.bgcolor = ft.colors.BLACK
 
