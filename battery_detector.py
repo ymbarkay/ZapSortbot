@@ -2,7 +2,7 @@ import cv2
 import torch
 import numpy as np
 from ultralytics import YOLO
-from ultralytics.utils.ops import non_max_suppression
+from ultralytics.utils.nms import non_max_suppression
 
 model = YOLO("best.pt")
 
