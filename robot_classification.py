@@ -1,3 +1,4 @@
+# robot_classification.py
 import flet as ft
 import traceback
 import threading
@@ -12,20 +13,21 @@ from flet import Colors, Icons
 ROBOT_IP = "172.20.10.4"
 ESP32_IP = "172.20.10.2"
 
-# === Positions ===
-VIEW_POSITION = PoseObject(0.351, 0.077, 0.219, 2.663, 1.049, 2.522)
-WEIGHT_DROP = PoseObject(0.122, -0.159, 0.106, -1.028, 1.551, -2.579)
-PICK_POSITION = PoseObject(0.378, 0.128, 0.151, -2.679, 1.554, -2.743)
-LIFT_POSITION = PoseObject(0.174, 0.009, 0.223, -0.194, 0.897, -0.236)
-LIFT_POSITION2 = PoseObject(0.137, -0.072, 0.153, -0.643, 1.230, -1.119)
-ALKALINE_DROP = PoseObject(0.351, -0.124, 0.151, -1.326, 1.431, -1.440)
-NiMH_DROP = PoseObject(0.238, -0.117, 0.127, -1.161, 1.429, -1.255)
-ZINC_DROP = PoseObject(0.284, 0.026, 0.132, -0.630, 1.061, -0.431)
-LITHIUM_DROP = PoseObject(0.189, 0.024, 0.120, -0.715, 1.303, -0.750)
-UNKNOWN_DROP = PoseObject(0.443, -0.135, 0.166, -0.180, 1.354, -0.315)
+
+# === Joint waypoints ===
+VIEW_JOINTS        = [-0.202, -0.540, -0.066, -0.399, -1.146, -0.663]        
+WEIGHT_DROP_JOINTS = [-0.031167, -0.265639, -1.114273, -0.374199, -0.185704, 0.303821]
+PICK_POSITION_JOINTS = [-0.355338, -1.014022, 0.556712, -0.041325, -1.172054, -0.584354]
+LIFT_POSITION_JOINTS = [-0.219886, 0.138852, -0.791590, 0.190306, -0.958831, -0.372665]
+LIFT_POSITION2_JOINTS = [-0.219886, 0.138852, -0.791590, 0.190306, -0.958831, -0.372665]
+ALKALINE_DROP_JOINTS = [-1.336981, -0.533784, -0.146223, 0.119743, -0.945025, -1.696490]
+NiMH_DROP_JOINTS = [-1.612450, -0.503485, -0.187126, -0.015247, -0.945025, -1.696490]
+ZINC_DROP_JOINTS = [-1.082819, -0.586807, 0.006787, 0.201044, -0.945025, -1.696490]
+LITHIUM_DROP_JOINTS = [-0.808872, -0.838288, 0.171916, 0.122811, -0.943491, -1.696490]
+UNKNOWN_DROP_JOINTS = [-0.694728, -1.103404, 0.679423, 0.245530, -0.943491, -1.696490]
 
 def main(page: ft.Page):
-    page.title = "Zapsortbot | Robot Classification"
+    page.title = "ZapSortBot | Robot Classification"
     page.scroll = ft.ScrollMode.AUTO
     page.theme_mode = ft.ThemeMode.DARK
     page.bgcolor = Colors.BLACK
@@ -52,12 +54,11 @@ def main(page: ft.Page):
             webcam_img.src_base64 = b64
             webcam_img.update()
         except Exception as e:
-            log(f"❌ Webcam error: {e}")
+            log(f"Webcam error: {e}")
 
     page.add(
         ft.Row([
-            ft.Icon(name=Icons.ANDROID, size=28, color=Colors.PINK_200),
-            ft.Text("DropBot Robot Classification", size=22, weight=ft.FontWeight.BOLD)
+            ft.Text("ZapSortBot Robot Classification", size=22, weight=ft.FontWeight.BOLD)
         ], alignment=ft.MainAxisAlignment.CENTER)
     )
 
@@ -71,12 +72,12 @@ def main(page: ft.Page):
     robot = None
     try:
         robot = NiryoRobot(ROBOT_IP)
-        log("✅ Connected to robot.")
+        log("Connected to robot.")
         robot.calibrate_auto()
         robot.update_tool()
-        log("🛠 Robot calibrated and tool updated.")
+        log("Robot calibrated and tool updated.")
     except Exception as e:
-        log("❌ Robot connection or calibration failed:")
+        log("Robot connection or calibration failed:")
         log(traceback.format_exc())
         return
 
@@ -89,43 +90,45 @@ def main(page: ft.Page):
 
     def run_classification():
         try:
+
+            robot.move_joints(VIEW_JOINTS)
             cap = cv2.VideoCapture(0)
-            log("🔍 Waiting for battery detection...")
-            robot.move_pose(VIEW_POSITION)
+            log("Waiting for battery detection...")
+            
 
             while True:
                 ret, frame = cap.read()
                 if not ret:
-                    log("⚠️ Failed to read frame.")
+                    log("Failed to read frame.")
                     continue
 
                 zoomed_frame = zoom_center(frame)
                 update_webcam_view(cv2.resize(zoomed_frame, (640, 480)))
                 battery = detect_battery_from_frame(frame)
                 if battery:
-                    log(f"🔍 Initial detection: {battery['size']}, {battery['color']} | Length: {battery.get('length', '—')}")
+                    log(f"Initial detection: {battery['size']}, {battery['color']} | Length: {battery.get('length', '—')}")
                     time.sleep(2.0)
                     ret, frame = cap.read()
                     zoomed_frame = zoom_center(frame)
                     update_webcam_view(cv2.resize(zoomed_frame, (640, 480)))
                     if not ret:
-                        log("⚠️ Failed to read frame after delay.")
+                        log("Failed to read frame after delay.")
                         continue
 
                     battery = detect_battery_from_frame(frame)
                     if not battery:
-                        log("⚠️ Battery moved out of frame after delay. Skipping...")
+                        log("Battery moved out of frame after delay. Skipping...")
                         continue
 
                     size = battery['size']
                     color = battery['color']
-                    log(f"🔄 Final detection: {size}, {color} | Length: {battery.get('length', '—')}")
+                    log(f"Final detection: {size}, {color} | Length: {battery.get('length', '—')}")
 
                     robot.open_gripper()
-                    robot.move_pose(PICK_POSITION)
+                    robot.move_joints(PICK_POSITION_JOINTS)
                     robot.close_gripper()
-                    robot.move_pose(LIFT_POSITION)
-                    robot.move_pose(WEIGHT_DROP)
+                    robot.move_joints(LIFT_POSITION_JOINTS)
+                    robot.move_joints(WEIGHT_DROP_JOINTS)
                     robot.open_gripper()
                     time.sleep(1.0)
 
@@ -135,87 +138,88 @@ def main(page: ft.Page):
                             weight = get_weight_from_esp32(ESP32_IP)
                             if weight is not None:
                                 break
-                            log(f"⚠️ Retry weight read {attempt + 1}/3...")
+                            log(f"Retry weight read {attempt + 1}/3...")
                             time.sleep(0.5)
                         except Exception as e:
-                            log(f"⚠️ Error reading weight: {e}")
+                            log(f"Error reading weight: {e}")
 
                     if weight is None:
-                        log("❌ Failed to read weight after 3 attempts. Returning to view.")
+                        log("Failed to read weight after 3 attempts. Returning to view.")
                         robot.close_gripper()
-                        robot.move_pose(VIEW_POSITION)
+                        robot.move_joints(VIEW_JOINTS)
                         continue
 
-                    log(f"⚖️ Weight = {weight:.2f} g")
+                    log(f"Weight = {weight:.2f} g")
                     robot.close_gripper()
-                    robot.move_pose(LIFT_POSITION2)
+                    robot.move_joints(LIFT_POSITION2_JOINTS)
 
                     classification = "unknown"
-                    drop_pose = UNKNOWN_DROP
+                    drop_joints = UNKNOWN_DROP_JOINTS
 
                     if size == "AA":
                         if color == "green" and 20 <= weight < 24:
                             classification = "unknown"
-                            drop_pose = UNKNOWN_DROP
+                            drop_joints = UNKNOWN_DROP_JOINTS
                         elif 20 <= weight < 24:
                             classification = "alkaline"
-                            drop_pose = ALKALINE_DROP
+                            drop_joints = ALKALINE_DROP_JOINTS
                         elif 13 <= weight < 15 or 17<=weight<18:
                             classification = "lithium"
-                            drop_pose = LITHIUM_DROP
+                            drop_joints = LITHIUM_DROP_JOINTS
                         elif color=="blue" and 24 <= weight <= 27:
                             classification = "unknown"
-                            drop_pose = UNKNOWN_DROP
+                            drop_joints = UNKNOWN_DROP_JOINTS
                         elif 24 <= weight <= 27:
                             classification = "NiMH"
-                            drop_pose = NiMH_DROP
+                            drop_joints = NiMH_DROP_JOINTS
                         elif 14 <= weight < 17 or 10<=weight<13:
                             classification = "zinc"
-                            drop_pose = ZINC_DROP
+                            drop_joints = ZINC_DROP_JOINTS
                         else:
                             classification = "unknown"
-                            drop_pose = UNKNOWN_DROP
+                            drop_joints = UNKNOWN_DROP_JOINTS
                     elif size == "AAA":
                         if color == "green" and 9 <= weight <= 11:
                             classification = "unknown"
-                            drop_pose = UNKNOWN_DROP
+                            drop_joints = UNKNOWN_DROP_JOINTS
                         elif 9 <= weight <= 11:
                             classification = "alkaline"
-                            drop_pose = ALKALINE_DROP
+                            drop_joints = ALKALINE_DROP_JOINTS
                         elif 5 < weight < 9:
                             classification = "zinc"
-                            drop_pose = ZINC_DROP
+                            drop_joints = ZINC_DROP_JOINTS
                         elif 3 <= weight < 5:
                             classification = "lithium"
-                            drop_pose = LITHIUM_DROP
+                            drop_joints = LITHIUM_DROP_JOINTS
                         elif color=="blue" and 11 < weight <= 13:
                             classification = "unknown"
-                            drop_pose = UNKNOWN_DROP
+                            drop_joints = UNKNOWN_DROP_JOINTS
                         elif 11 < weight <= 13:
                             classification = "NiMH"
-                            drop_pose = NiMH_DROP
+                            drop_joints = NiMH_DROP_JOINTS
 
-                    log(f"🔹 Classed as {classification.upper()}")
-                    robot.move_pose(drop_pose)
+                    log(f"Classed as {classification.upper()}")
+                    robot.move_joints(drop_joints)
                     robot.open_gripper()
                     time.sleep(0.5)
-                    robot.move_pose(VIEW_POSITION)
+                    robot.move_joints(VIEW_JOINTS)
 
         except Exception as e:
-            log("❌ Unexpected error during classification:")
+            log("Unexpected error during classification:")
             log(traceback.format_exc())
             try:
-                robot.move_pose(VIEW_POSITION)
+                robot.move_joints(VIEW_JOINTS)
             except:
-                log("⚠️ Could not return to view position.")
+                log("Could not return to view position.")
 
     page.add(
         ft.Row([
-            ft.ElevatedButton("▶ Start Classification", icon=Icons.PLAY_ARROW, bgcolor=Colors.BLUE_600,
+            ft.ElevatedButton("Start Classification", icon=Icons.PLAY_ARROW, bgcolor=Colors.BLUE_600,
                               on_click=lambda e: threading.Thread(target=run_classification, daemon=True).start()),
-            ft.ElevatedButton("❌ Exit", icon=Icons.CLOSE, bgcolor=Colors.PURPLE_700,
+            ft.ElevatedButton("Exit", icon=Icons.CLOSE, bgcolor=Colors.PURPLE_700,
                               on_click=lambda e: page.window_close())
         ], alignment=ft.MainAxisAlignment.CENTER)
     )
 
 ft.app(target=main)
+VIEW_POSITION_JOINTS = [-0.245759, -0.418648, -0.250754, -0.484645, -0.859122, -0.183985]
